@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投影仪测试工具箱</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>🛠 投影仪测试工具箱</h1>
+            <ul>
+                <li><a href="#adb">ADB命令</a></li>
+                <li><a href="#serial">串口命令</a></li>
+                <li><a href="#keycode">按键码</a></li>
+                <li><a href="#stress">压测工具</a></li>
+                <li><a href="#md5">MD5校验</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- 搜索栏 -->
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="🔍 搜索命令..." />
+        </div>
+
+        <!-- ADB 命令 -->
+        <section id="adb" class="tool-section">
+            <h2>📱 ADB 命令</h2>
+
+            <div class="category-title">日志抓取</div>
+            <div class="cmd-grid" id="adb-log">
+                <div class="cmd-card" data-tags="adb log">
+                    <div class="cmd-name">抓取全部日志</div>
+                    <div class="cmd-code">adb logcat -b all &gt;log.txt</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb log bluetooth">
+                    <div class="cmd-name">抓蓝牙完整日志</div>
+                    <div class="cmd-code">adb logcat -b main -b system -b events -b radio -v threadtime &gt; bluetooth_full.log</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb log kernel">
+                    <div class="cmd-name">抓kernel日志</div>
+                    <div class="cmd-code">adb shell logcat -b kernel &gt;log.txt</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb log filter">
+                    <div class="cmd-name">过滤音频状态变化</div>
+                    <div class="cmd-code">adb logcat | findstr "EVENT_TYPE_AUDIO_STATE_CHANGED"</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb log bluetooth dump">
+                    <div class="cmd-name">导出蓝牙dump</div>
+                    <div class="cmd-code">adb shell dumpsys bluetooth_manager &gt; bluetooth_dump.txt</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb log dmesg kernel">
+                    <div class="cmd-name">导出内核dmesg</div>
+                    <div class="cmd-code">adb shell dmesg &gt; android_kernel.log</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb log enable">
+                    <div class="cmd-name">开启SDK日志</div>
+                    <div class="cmd-code">adb shell setprop isSDKLogEnabled true</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb log ad">
+                    <div class="cmd-name">开启广告SDK日志</div>
+                    <div class="cmd-code">adb shell setprop persist.adsdk.log.enabled true</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb log hotfix">
+                    <div class="cmd-name">开启hotfix日志</div>
+                    <div class="cmd-code">adb shell setprop persist.hotfix.log true</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb version">
+                    <div class="cmd-name">导出系统版本+APK版本</div>
+                    <div class="cmd-code">adb shell "cat /proc/version" >> version.txt
+adb shell "dumpsys package |grep -E 'pkg=|versionCode='" >> APKversion.txt</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+            </div>
+
+            <div class="category-title">OTA 升级相关</div>
+            <div class="cmd-grid">
+                <div class="cmd-card" data-tags="adb remount overlayfs verity ota">
+                    <div class="cmd-name">remount 后恢复 verity（OTA前必做）</div>
+                    <div class="cmd-code">adb root
+adb enable-verity
+adb reboot
+# ⚠️ 用过 adb remount 之后如果要做 OTA
+# 必须先执行以上命令，否则报 kInstallDeviceOpenError (7)</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb remount overlayfs build.prop">
+                    <div class="cmd-name">remount 修改系统文件</div>
+                    <div class="cmd-code">adb root
+adb remount
+# ⚠️ 完成后记得 adb enable-verity + reboot 再做 OTA</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+            </div>
+
+            <div class="category-title">截图与文件</div>
+            <div class="cmd-grid">
+                <div class="cmd-card" data-tags="adb screenshot">
+                    <div class="cmd-name">截图</div>
+                    <div class="cmd-code">adb shell screencap /sdcard/test.png
+adb pull /sdcard/test.png</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb push pull file">
+                    <div class="cmd-name">推送/拉取文件</div>
+                    <div class="cmd-code">adb push &lt;本地文件&gt; &lt;设备路径&gt;
+adb pull &lt;设备路径&gt; &lt;本地路径&gt;</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb build.prop remount">
+                    <div class="cmd-name">拉取build.prop并修改后推回</div>
+                    <div class="cmd-code">adb root
+adb connect 192.168.x.x
+adb remount
+adb pull /system/build.prop .
+adb push build.prop /system/build.prop</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+            </div>
+
+            <div class="category-title">系统设置</div>
+            <div class="cmd-grid">
+                <div class="cmd-card" data-tags="adb env environment">
+                    <div class="cmd-name">切换环境 dev/acc/prod</div>
+                    <div class="cmd-code">adb shell setprop persist.sys.zeasn.pc.env dev
+# 可选值: dev / acc / prod</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb property getprop">
+                    <div class="cmd-name">查看属性</div>
+                    <div class="cmd-code">adb shell getprop ro.vendor.zeasn.pjt.auth
+adb shell getprop | grep env</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb hotfix interval">
+                    <div class="cmd-name">调整hotfix更新间隔</div>
+                    <div class="cmd-code">adb shell setprop persist.hotfix.update 60000
+# 单位毫秒</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb temperature fan">
+                    <div class="cmd-name">关闭温度过高弹窗 (PID4)</div>
+                    <div class="cmd-code">adb shell setprop persist.sys.ntcfan.check false
+adb shell setprop persist.sys.ntcfan.exception false</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb adb enable settings">
+                    <div class="cmd-name">kernel模式下开启ADB</div>
+                    <div class="cmd-code">settings put global adb_enabled 1</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb wm density size">
+                    <div class="cmd-name">查看屏幕分辨率/DPI</div>
+                    <div class="cmd-code">adb shell wm size
+adb shell wm density</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb memory meminfo">
+                    <div class="cmd-name">查看可用内存</div>
+                    <div class="cmd-code">adb shell cat /proc/meminfo | grep "MemAvailable"</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+            </div>
+
+            <div class="category-title">App 操作</div>
+            <div class="cmd-grid">
+                <div class="cmd-card" data-tags="adb monkey stress">
+                    <div class="cmd-name">Monkey压测 (appgallery)</div>
+                    <div class="cmd-code">adb shell monkey -v -v -p com.zeasn.whaleos.appgallery --ignore-crashes --ignore-timeouts -s 1000 --throttle 50 150000 &gt;monkey.txt</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb install apk">
+                    <div class="cmd-name">打开App Installer</div>
+                    <div class="cmd-code">adb shell am start -n com.droidlogic.appinstall/.main</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb settings launch">
+                    <div class="cmd-name">打开系统设置</div>
+                    <div class="cmd-code">adb shell am start -n com.android.tv.settings/com.android.tv.settings.MainSettings</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb app version aivoice">
+                    <div class="cmd-name">查看aivoice版本</div>
+                    <div class="cmd-code">adb shell pm dump com.whaletv.aivoice | grep versionName</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb input keyevent back enter">
+                    <div class="cmd-name">发送按键事件</div>
+                    <div class="cmd-code">adb shell input keyevent KEYCODE_BACK
+adb shell input keyevent KEYCODE_ENTER</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="adb tee provision key widevine">
+                    <div class="cmd-name">烧Widevine/MGKID/HDCP key</div>
+                    <div class="cmd-code">tee_provision -i /storage/A5EB-3927/&lt;keyfile.enc&gt;</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 串口命令 -->
+        <section id="serial" class="tool-section">
+            <h2>🔌 串口命令</h2>
+
+            <div class="category-title">烧写 KEY</div>
+            <div class="cmd-grid">
+                <div class="cmd-card" data-tags="serial ota key burn">
+                    <div class="cmd-name">烧OTA Key</div>
+                    <div class="cmd-code">cd /sys/class/unifykeys/
+echo IDX_OTAKEY_NAME &gt; name
+echo &lt;key_value_1&gt; &gt; write
+echo &lt;key_value_2&gt; &gt; write
+reboot</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial ota key read verify">
+                    <div class="cmd-name">读取/验证OTA Key</div>
+                    <div class="cmd-code">cd /sys/class/unifykeys/
+echo IDX_OTAKEY_NAME &gt; name
+cat read</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial ota key delete">
+                    <div class="cmd-name">删除OTA Key</div>
+                    <div class="cmd-code">cd /sys/class/unifykeys/
+echo IDX_OTAKEY_NAME &gt; name
+echo "0" &gt; write</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial mac burn write">
+                    <div class="cmd-name">烧MAC地址</div>
+                    <div class="cmd-code">cd /sys/class/unifykeys/
+echo mac &gt; name
+echo "XX:XX:XX:XX:XX:XX" &gt; write
+reboot</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial mac tkconfig burn">
+                    <div class="cmd-name">烧MAC (tkconfig方式)</div>
+                    <div class="cmd-code">mount -o rw,remount /tkconfig
+chmod 777 /tkconfig
+echo &lt;MAC无冒号&gt; &gt; /tkconfig/macaddr.txt
+sync</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial pid switch change">
+                    <div class="cmd-name">切换PID</div>
+                    <div class="cmd-code">su
+echo "pid" &gt; /sys/class/unifykeys/name
+echo "&lt;pid_number&gt;" &gt; /sys/class/unifykeys/write
+rm /mnt/vendor/param/pid_updated.txt
+rm /mnt/vendor/param/panel/*
+reboot</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+            </div>
+
+            <div class="category-title">系统调试</div>
+            <div class="cmd-grid">
+                <div class="cmd-card" data-tags="serial remount tkconfig">
+                    <div class="cmd-name">挂载tkconfig为可写</div>
+                    <div class="cmd-code">mount -o rw,remount /tkconfig
+chmod 777 /tkconfig</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial uboot otg uart log">
+                    <div class="cmd-name">uboot开启OTG/UART抓log</div>
+                    <div class="cmd-code">setenv otg_device 1; setenv UARTOnOff 1; saveenv; reset</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial uboot model name">
+                    <div class="cmd-name">uboot切换model_name</div>
+                    <div class="cmd-code">setenv model_name FHD
+saveenv
+reset
+# 可选: FHD / UHD_2RG / Z_PANEL</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial panel screen param">
+                    <div class="cmd-name">切屏参 (uboot)</div>
+                    <div class="cmd-code">xsave panel index &lt;X&gt;</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial osd close disable">
+                    <div class="cmd-name">关闭OSD</div>
+                    <div class="cmd-code"># 进入 debugmenu @ 10 -> 3 -> 22.PLAT_OSD -> 4.OSD enable -> 输入0
+# 1=开启 / 0=关闭</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial iptables port open">
+                    <div class="cmd-name">开启9222/7788调试端口</div>
+                    <div class="cmd-code">/mtd_apexe/board/iptables -A INPUT -p tcp --dport 9222 -j ACCEPT
+/mtd_apexe/board/iptables -A INPUT -p tcp --dport 7788 -j ACCEPT</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial memory procrank">
+                    <div class="cmd-name">查内存 (procrank)</div>
+                    <div class="cmd-code">procrank
+# 或
+cat /proc/meminfo | grep "MemAvailable"</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial flash board img">
+                    <div class="cmd-name">刷board.img / 正常版本</div>
+                    <div class="cmd-code"># 刷board.img (uboot下)
+ewrite ap0
+
+# 刷正常版本 (uboot下)
+nvt_eburner</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial rcu remote default">
+                    <div class="cmd-name">切默认遥控器</div>
+                    <div class="cmd-code">mount -o remount,rw /tclconfig
+rm -f /tclconfig/project_id/rcu/key.R*
+sync
+reboot -f</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial symlink delete">
+                    <div class="cmd-name">删除软链接</div>
+                    <div class="cmd-code">cd /mtd_rwarea/apdat/ui
+rm -rf zeasn.static.page</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+            </div>
+
+            <div class="category-title">压测内存监控（串口）</div>
+            <div class="cmd-grid">
+                <div class="cmd-card wide" data-tags="serial stress memory monitor loop">
+                    <div class="cmd-name">每小时输出一次内存信息（压测用）</div>
+                    <div class="cmd-code">su
+while true; do
+  cat /proc/meminfo
+  echo m &gt; /proc/sysrq-trigger
+  cat /proc/pagetrace
+  dumpsys meminfo
+  top -b -n 1
+  sleep 3600;
+done &</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card wide" data-tags="serial sysmonitor nohup netflix">
+                    <div class="cmd-name">sysmonitor内存泄漏监控</div>
+                    <div class="cmd-code">nohup /data/sysmonitor.sh -p /mnt/media_rw/&lt;USB&gt;/netflix_memory_leak -m top,vmstat,pressure,mem,pagetrace,dumpsys,kvmstat,slabinfo -app c2,surfaceflinger,mediaserver -app_info meminfo,maps -logcat -dmesg -t 20 1&gt;/dev/null &</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="serial usb dd copy speed">
+                    <div class="cmd-name">U盘读写速度测试</div>
+                    <div class="cmd-code"># 写入1G文件到U盘
+dd if=/dev/zero bs=1k count=1000000 of=/storage/&lt;USB&gt;/1Gb.file
+# 从U盘读取
+dd if=/media/sda1/1Gb.file bs=64k count=1000000 of=/dev/null</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 按键码 -->
+        <section id="keycode" class="tool-section">
+            <h2>🎮 Android 按键码</h2>
+            <p class="section-desc">使用方式：<code>adb shell input keyevent &lt;code&gt;</code></p>
+            <div class="keycode-grid">
+                <div class="keycode-item"><span class="keycode-num">19</span><span class="keycode-name">↑ 向上</span></div>
+                <div class="keycode-item"><span class="keycode-num">20</span><span class="keycode-name">↓ 向下</span></div>
+                <div class="keycode-item"><span class="keycode-num">21</span><span class="keycode-name">← 向左</span></div>
+                <div class="keycode-item"><span class="keycode-num">22</span><span class="keycode-name">→ 向右</span></div>
+                <div class="keycode-item"><span class="keycode-num">23</span><span class="keycode-name">✓ 确定</span></div>
+                <div class="keycode-item"><span class="keycode-num">3</span><span class="keycode-name">🏠 Home</span></div>
+                <div class="keycode-item"><span class="keycode-num">4</span><span class="keycode-name">← Back</span></div>
+                <div class="keycode-item"><span class="keycode-num">26</span><span class="keycode-name">⏻ 电源键</span></div>
+                <div class="keycode-item"><span class="keycode-num">24</span><span class="keycode-name">🔊 音量+</span></div>
+                <div class="keycode-item"><span class="keycode-num">25</span><span class="keycode-name">🔉 音量-</span></div>
+                <div class="keycode-item"><span class="keycode-num">176</span><span class="keycode-name">⚙ Settings</span></div>
+                <div class="keycode-item"><span class="keycode-num">178</span><span class="keycode-name">📺 Source</span></div>
+            </div>
+        </section>
+
+        <!-- 压测工具 -->
+        <section id="stress" class="tool-section">
+            <h2>📶 压测工具</h2>
+
+            <div class="category-title">iperf 网络测速</div>
+            <div class="cmd-grid">
+                <div class="cmd-card" data-tags="iperf network speed download">
+                    <div class="cmd-name">设备端启动iperf服务</div>
+                    <div class="cmd-code">cd /data/data/com.magicandroidapps.iperf/bin
+./iperf -s</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="iperf network speed upload pc">
+                    <div class="cmd-name">PC端测试（下行）</div>
+                    <div class="cmd-code">iperf -c &lt;设备IP&gt; -i 1 -t 60 -w 1M</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+                <div class="cmd-card" data-tags="iperf network upload">
+                    <div class="cmd-name">PC端启动服务（测上行）</div>
+                    <div class="cmd-code"># PC端
+iperf -s
+# 设备端
+./iperf -c &lt;PC的IP&gt; -i 1 -t 60 -w 1M</div>
+                    <button class="copy-btn">复制</button>
+                </div>
+            </div>
+
+            <div class="category-title">OTA 错误码对照</div>
+            <div class="ota-table">
+                <div class="ota-row header"><span>错误码</span><span>枚举名</span><span>说明</span></div>
+                <div class="ota-row"><span>4</span><span>FILESYSTEM_COPIER_ERROR</span><span>文件系统复制错误</span></div>
+                <div class="ota-row"><span>5</span><span>POST_INSTALL_RUNNER_ERROR</span><span>post-install钩子执行错误</span></div>
+                <div class="ota-row"><span>6</span><span>PAYLOAD_MISMATCHED_TYPE_ERROR</span><span>payload类型不匹配</span></div>
+                <div class="ota-row"><span>7</span><span>INSTALL_DEVICE_OPEN_ERROR</span><span>设备打开错误</span></div>
+                <div class="ota-row"><span>8</span><span>KERNEL_DEVICE_OPEN_ERROR</span><span>kernel设备打开错误</span></div>
+                <div class="ota-row"><span>9</span><span>DOWNLOAD_TRANSFER_ERROR</span><span>payload下载/应用错误</span></div>
+                <div class="ota-row"><span>10</span><span>PAYLOAD_HASH_MISMATCH_ERROR</span><span>payload hash不匹配</span></div>
+                <div class="ota-row"><span>11</span><span>PAYLOAD_SIZE_MISMATCH_ERROR</span><span>payload大小不匹配</span></div>
+                <div class="ota-row"><span>12</span><span>DOWNLOAD_PAYLOAD_VERIFICATION_ERROR</span><span>payload签名验证失败</span></div>
+                <div class="ota-row"><span>26</span><span>SIGNATURES_INCONSISTENT</span><span>签名不一致</span></div>
+                <div class="ota-row"><span>51</span><span>PAYLOAD_TIMESTAMP_ERROR</span><span>payload时间戳降级</span></div>
+                <div class="ota-row"><span>60</span><span>NOT_ENOUGH_SPACE</span><span>设备空间不足</span></div>
+                <div class="ota-row"><span>61</span><span>DEVICE_CORRUPTED</span><span>设备损坏，无法继续更新</span></div>
+            </div>
+        </section>
+
+        <!-- MD5 -->
+        <section id="md5" class="tool-section">
+            <h2>🔐 文件 MD5 校验</h2>
+            <p class="section-desc">拖拽文件到下方区域，即可计算 MD5 值</p>
+            <div id="drop-zone">
+                <div class="drop-icon">📂</div>
+                <p>将文件拖拽到此处</p>
+                <p class="drop-hint">或点击选择文件</p>
+                <input type="file" id="file-input" multiple>
+            </div>
+            <div id="md5-results"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>🛠 投影仪测试工具箱 · 内部使用</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
