@@ -366,6 +366,24 @@ main {
     color: #484f58;
 }
 
+/* APK sign link */
+.apk-link {
+    display: inline-block;
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #58a6ff;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.apk-link:hover {
+    background: #1c2128;
+    border-color: #58a6ff;
+}
+
 /* Footer */
 footer {
     background: #161b22;
