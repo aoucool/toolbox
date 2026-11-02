@@ -171,16 +171,19 @@ async function proxyOnline() {
 async function refreshProxyStatus() {
     const dot = $id('proxy-status');
     const dev = $id('proxy-devices');
+    const hint = $id('proxy-hint');
     if (!dot) return false;
 
     dot.className = 'proxy-status proxy-off';
     dot.textContent = '● 代理未启动';
     dev.textContent = '';
+    if (hint) hint.style.display = '';
 
     if (!(await proxyOnline())) return false;
 
     dot.className = 'proxy-status proxy-on';
     dot.textContent = '● 代理已连接';
+    if (hint) hint.style.display = 'none';
     try {
         const r = await fetch(PROXY + '/devices', { headers: proxyHeaders() });
         const j = await r.json();
@@ -200,6 +203,7 @@ async function runCmd(cmd, name) {
     const shot = $id('exec-shot');
     panel.classList.remove('hidden');
     shot.innerHTML = '';
+    out.style.display = '';
     $id('exec-title').textContent = '执行中… ' + (name || cmd);
     out.textContent = '$ ' + cmd + '\n\n执行中…';
 
@@ -224,11 +228,21 @@ async function runCmd(cmd, name) {
 
 async function takeShot() {
     const panel = $id('exec-panel');
+    const out = $id('exec-output');
+    const shot = $id('exec-shot');
     panel.classList.remove('hidden');
     $id('exec-title').textContent = '设备截图';
-    $id('exec-output').textContent = '正在从设备拉取截图…';
-    $id('exec-shot').innerHTML =
-        '<img src="' + PROXY + '/screenshot/img?t=' + Date.now() + '" alt="设备截图">';
+
+    out.style.display = '';
+    out.textContent = '正在从设备拉取截图…';
+    shot.innerHTML = '';
+
+    const img = new Image();
+    img.alt = '设备截图';
+    img.onload = () => { out.style.display = 'none'; };
+    img.onerror = () => { out.textContent = '截图加载失败：代理没开，或设备没连上。'; };
+    img.src = PROXY + '/screenshot/img?t=' + Date.now();
+    shot.appendChild(img);
 }
 
 async function guardProxy() {
