@@ -173,7 +173,7 @@ adb push build.prop /system/build.prop</div>
                 <div class="cmd-card" data-tags="adb property getprop">
                     <div class="cmd-name">查看属性</div>
                     <div class="cmd-code">adb shell getprop ro.vendor.zeasn.pjt.auth
-adb shell getprop | grep env</div>
+adb shell "getprop | grep env"</div>
                     <button class="copy-btn">复制</button>
                 </div>
                 <div class="cmd-card" data-tags="adb hotfix interval">
@@ -201,7 +201,7 @@ adb shell wm density</div>
                 </div>
                 <div class="cmd-card" data-tags="adb memory meminfo">
                     <div class="cmd-name">查看可用内存</div>
-                    <div class="cmd-code">adb shell cat /proc/meminfo | grep "MemAvailable"</div>
+                    <div class="cmd-code">adb shell "cat /proc/meminfo | grep MemAvailable"</div>
                     <button class="copy-btn">复制</button>
                 </div>
             </div>
@@ -225,7 +225,7 @@ adb shell wm density</div>
                 </div>
                 <div class="cmd-card" data-tags="adb app version aivoice">
                     <div class="cmd-name">查看aivoice版本</div>
-                    <div class="cmd-code">adb shell pm dump com.whaletv.aivoice | grep versionName</div>
+                    <div class="cmd-code">adb shell "pm dump com.whaletv.aivoice | grep versionName"</div>
                     <button class="copy-btn">复制</button>
                 </div>
                 <div class="cmd-card" data-tags="adb input keyevent back enter">
