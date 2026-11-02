@@ -467,6 +467,8 @@ footer {
     border: 1px solid #30363d;
     border-radius: 8px;
     padding: 1rem;
+    /* 自动滚动定位时给顶部导航条留出空间，别被挡住 */
+    scroll-margin-top: 70px;
 }
 
 .exec-panel.hidden { display: none; }

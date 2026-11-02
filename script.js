@@ -217,6 +217,8 @@ async function startCmd(cmd, name) {
     out.style.display = '';
     out.textContent = '$ ' + cmd + '\n\n启动中…';
     $id('exec-title').textContent = '● 启动中… ' + (name || '');
+    // 面板在页面顶部，点下方的卡片时自动滚过去，免得手动往上滑
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     try {
         const r = await fetch(PROXY + '/exec/start', {
@@ -286,6 +288,7 @@ async function takeShot() {
     const shot = $id('exec-shot');
     panel.classList.remove('hidden');
     $id('exec-title').textContent = '设备截图';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     out.style.display = '';
     out.textContent = '正在从设备拉取截图…';
