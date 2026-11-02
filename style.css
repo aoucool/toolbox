@@ -459,19 +459,29 @@ footer {
     border-color: #3fb950;
 }
 
-/* 执行结果面板 */
+/* 执行结果面板：固定在屏幕底部，滚动命令列表时始终可见 */
 .exec-panel {
-    max-width: 1300px;
-    margin: 1rem auto 0;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    width: min(1300px, 96vw);
+    max-height: 46vh;
+    display: flex;
+    flex-direction: column;
     background: #161b22;
     border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 1rem;
-    /* 自动滚动定位时给顶部导航条留出空间，别被挡住 */
-    scroll-margin-top: 70px;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.55);
+    padding: 0.9rem 1rem 1rem;
+    z-index: 200;
 }
 
 .exec-panel.hidden { display: none; }
+
+/* 面板展开时给页面底部留出空间，免得最后几张卡被挡住 */
+body.exec-open { padding-bottom: 48vh; }
 
 .exec-head {
     display: flex;
@@ -493,7 +503,7 @@ footer {
     color: #c9d1d9;
     white-space: pre-wrap;
     word-break: break-all;
-    max-height: 340px;
+    max-height: 28vh;
     overflow: auto;
     line-height: 1.5;
 }
@@ -501,6 +511,8 @@ footer {
 #exec-shot img {
     margin-top: 0.8rem;
     max-width: 100%;
+    max-height: 30vh;
+    object-fit: contain;
     border: 1px solid #30363d;
     border-radius: 6px;
 }
