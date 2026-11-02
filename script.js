@@ -197,33 +197,87 @@ async function refreshProxyStatus() {
     return true;
 }
 
-async function runCmd(cmd, name) {
+let JOB_ID = null;
+let POLL_TIMER = null;
+
+function stopPolling() {
+    if (POLL_TIMER) { clearInterval(POLL_TIMER); POLL_TIMER = null; }
+}
+
+// 后台启动命令：立刻返回，输出靠轮询不断追加（logcat 这类不会自己结束的也行）
+async function startCmd(cmd, name) {
+    stopPolling();
+    JOB_ID = null;
+
     const panel = $id('exec-panel');
     const out = $id('exec-output');
     const shot = $id('exec-shot');
     panel.classList.remove('hidden');
     shot.innerHTML = '';
     out.style.display = '';
-    $id('exec-title').textContent = '执行中… ' + (name || cmd);
-    out.textContent = '$ ' + cmd + '\n\n执行中…';
+    out.textContent = '$ ' + cmd + '\n\n启动中…';
+    $id('exec-title').textContent = '● 启动中… ' + (name || '');
 
     try {
-        const r = await fetch(PROXY + '/exec', {
-            method: 'POST',
-            headers: proxyHeaders(),
-            body: JSON.stringify({ cmd, timeout: 30 })
+        const r = await fetch(PROXY + '/exec/start', {
+            method: 'POST', headers: proxyHeaders(),
+            body: JSON.stringify({ cmd })
         });
         const j = await r.json();
-        $id('exec-title').textContent =
-            (j.success ? '✅ 执行成功' : '❌ 执行失败') + (name ? ' — ' + name : '');
-        out.textContent = '$ ' + cmd + '\n\n' +
-            (j.stdout || '(无输出)') +
-            (j.stderr ? '\n[stderr]\n' + j.stderr : '');
+        if (!j.id) {
+            $id('exec-title').textContent = '❌ 启动失败';
+            out.textContent = '$ ' + cmd + '\n\n' + JSON.stringify(j);
+            return;
+        }
+        JOB_ID = j.id;
+        pollCmd();
+        POLL_TIMER = setInterval(pollCmd, 800);
     } catch {
         $id('exec-title').textContent = '❌ 无法连接代理';
         out.textContent = '$ ' + cmd + '\n\n连不上 ' + PROXY +
             '\n请先双击运行「启动设备代理.bat」，再点「刷新」。';
     }
+}
+
+async function pollCmd() {
+    if (!JOB_ID) return;
+    let j;
+    try {
+        const r = await fetch(PROXY + '/exec/poll?id=' + JOB_ID + '&tail=300',
+                              { headers: proxyHeaders() });
+        j = await r.json();
+    } catch {
+        stopPolling();
+        return;
+    }
+    if (!j || j.error) { stopPolling(); return; }
+
+    const out = $id('exec-output');
+    let head;
+    if (j.done) head = j.stopped ? '■ 已停止' : '✅ 执行结束';
+    else head = '● 执行中';
+    $id('exec-title').textContent =
+        head + ' — ' + j.elapsed + 's' + (j.done ? '' : '（点「关闭」即停止）');
+
+    let body = j.output || '(暂无输出)';
+    if (j.dropped_lines) body = '…（更早的 ' + j.dropped_lines + ' 行已丢弃）\n' + body;
+    out.textContent = '$ ' + j.cmd + '\n累计 ' + j.total_lines + ' 行\n\n' + body;
+
+    if (j.done) stopPolling();
+}
+
+// 停止：杀掉整棵进程树，已抓到的输出全部保留
+async function stopCurrentJob() {
+    if (JOB_ID) {
+        try {
+            await fetch(PROXY + '/exec/stop', {
+                method: 'POST', headers: proxyHeaders(),
+                body: JSON.stringify({ id: JOB_ID })
+            });
+        } catch {}
+    }
+    stopPolling();
+    JOB_ID = null;
 }
 
 async function takeShot() {
@@ -263,7 +317,7 @@ document.querySelectorAll('.cmd-card').forEach(card => {
     btn.title = '通过本机代理在设备上执行这条命令';
     btn.addEventListener('click', async () => {
         if (!(await guardProxy())) return;
-        runCmd(lines[0], card.querySelector('.cmd-name')?.textContent || '');
+        startCmd(lines[0], card.querySelector('.cmd-name')?.textContent || '');
     });
     card.appendChild(btn);
 });
@@ -272,6 +326,10 @@ $id('proxy-refresh')?.addEventListener('click', refreshProxyStatus);
 $id('proxy-shot')?.addEventListener('click', async () => {
     if (await guardProxy()) takeShot();
 });
-$id('exec-close')?.addEventListener('click', () => $id('exec-panel').classList.add('hidden'));
+// 关闭 = 先停止正在跑的命令，再收起面板（跟关掉一个 cmd 窗口一样）
+$id('exec-close')?.addEventListener('click', async () => {
+    await stopCurrentJob();
+    $id('exec-panel').classList.add('hidden');
+});
 
 refreshProxyStatus();
