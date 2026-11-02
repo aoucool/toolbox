@@ -139,3 +139,125 @@ dropZone?.addEventListener('drop', e => {
     dropZone.classList.remove('dragover');
     [...e.dataTransfer.files].forEach(processFile);
 });
+
+/* ============================================================
+   设备代理：让工具箱网页直接操作投影仪
+   前置条件：本机先运行 agent/server.py（双击「启动设备代理.bat」）
+   链路：网页 → fetch → 127.0.0.1:8765 → adb → 设备
+   ============================================================ */
+const PROXY = 'http://127.0.0.1:8765';
+const TOKEN_KEY = 'kiro_proxy_token';
+
+const $id = id => document.getElementById(id);
+
+function getToken() {
+    try { return localStorage.getItem(TOKEN_KEY) || ''; } catch { return ''; }
+}
+
+function proxyHeaders() {
+    const h = { 'Content-Type': 'application/json' };
+    const t = getToken();
+    if (t) h['X-Kiro-Token'] = t;
+    return h;
+}
+
+async function proxyOnline() {
+    try {
+        const r = await fetch(PROXY + '/', { headers: proxyHeaders() });
+        return r.ok;
+    } catch { return false; }
+}
+
+async function refreshProxyStatus() {
+    const dot = $id('proxy-status');
+    const dev = $id('proxy-devices');
+    if (!dot) return false;
+
+    dot.className = 'proxy-status proxy-off';
+    dot.textContent = '● 代理未启动';
+    dev.textContent = '';
+
+    if (!(await proxyOnline())) return false;
+
+    dot.className = 'proxy-status proxy-on';
+    dot.textContent = '● 代理已连接';
+    try {
+        const r = await fetch(PROXY + '/devices', { headers: proxyHeaders() });
+        const j = await r.json();
+        const list = (j.devices || []).filter(d => d.status === 'device');
+        dev.textContent = list.length
+            ? '设备：' + list.map(d => d.serial).join('、')
+            : '未检测到设备';
+    } catch {
+        dev.textContent = '读取设备列表失败';
+    }
+    return true;
+}
+
+async function runCmd(cmd, name) {
+    const panel = $id('exec-panel');
+    const out = $id('exec-output');
+    const shot = $id('exec-shot');
+    panel.classList.remove('hidden');
+    shot.innerHTML = '';
+    $id('exec-title').textContent = '执行中… ' + (name || cmd);
+    out.textContent = '$ ' + cmd + '\n\n执行中…';
+
+    try {
+        const r = await fetch(PROXY + '/exec', {
+            method: 'POST',
+            headers: proxyHeaders(),
+            body: JSON.stringify({ cmd, timeout: 30 })
+        });
+        const j = await r.json();
+        $id('exec-title').textContent =
+            (j.success ? '✅ 执行成功' : '❌ 执行失败') + (name ? ' — ' + name : '');
+        out.textContent = '$ ' + cmd + '\n\n' +
+            (j.stdout || '(无输出)') +
+            (j.stderr ? '\n[stderr]\n' + j.stderr : '');
+    } catch {
+        $id('exec-title').textContent = '❌ 无法连接代理';
+        out.textContent = '$ ' + cmd + '\n\n连不上 ' + PROXY +
+            '\n请先双击运行「启动设备代理.bat」，再点「刷新」。';
+    }
+}
+
+async function takeShot() {
+    const panel = $id('exec-panel');
+    panel.classList.remove('hidden');
+    $id('exec-title').textContent = '设备截图';
+    $id('exec-output').textContent = '正在从设备拉取截图…';
+    $id('exec-shot').innerHTML =
+        '<img src="' + PROXY + '/screenshot/img?t=' + Date.now() + '" alt="设备截图">';
+}
+
+async function guardProxy() {
+    if (await proxyOnline()) return true;
+    alert('代理未启动。\n请先双击运行「启动设备代理.bat」，再回来点「刷新」。');
+    return false;
+}
+
+// 给「单条命令」的卡片注入执行按钮（多行命令不注入，避免误执行）
+document.querySelectorAll('.cmd-card').forEach(card => {
+    const code = card.querySelector('.cmd-code')?.innerText || '';
+    const lines = code.split('\n').map(s => s.trim()).filter(Boolean);
+    if (lines.length !== 1) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn run-btn';
+    btn.textContent = '执行';
+    btn.title = '通过本机代理在设备上执行这条命令';
+    btn.addEventListener('click', async () => {
+        if (!(await guardProxy())) return;
+        runCmd(lines[0], card.querySelector('.cmd-name')?.textContent || '');
+    });
+    card.appendChild(btn);
+});
+
+$id('proxy-refresh')?.addEventListener('click', refreshProxyStatus);
+$id('proxy-shot')?.addEventListener('click', async () => {
+    if (await guardProxy()) takeShot();
+});
+$id('exec-close')?.addEventListener('click', () => $id('exec-panel').classList.add('hidden'));
+
+refreshProxyStatus();

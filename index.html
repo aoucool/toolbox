@@ -27,6 +27,25 @@
             <input type="text" id="search-input" placeholder="🔍 搜索命令..." />
         </div>
 
+        <!-- 设备代理状态（需要本机运行「启动设备代理.bat」） -->
+        <div id="proxy-bar" class="proxy-bar">
+            <span id="proxy-status" class="proxy-status proxy-off">● 代理未启动</span>
+            <span id="proxy-devices" class="proxy-devices"></span>
+            <button id="proxy-refresh" class="proxy-btn">刷新</button>
+            <button id="proxy-shot" class="proxy-btn">截图</button>
+            <span class="proxy-hint">未启动时代理按钮无效，先双击「启动设备代理.bat」</span>
+        </div>
+
+        <!-- 命令执行结果 -->
+        <div id="exec-panel" class="exec-panel hidden">
+            <div class="exec-head">
+                <span id="exec-title">执行结果</span>
+                <button id="exec-close" class="proxy-btn">关闭</button>
+            </div>
+            <pre id="exec-output"></pre>
+            <div id="exec-shot"></div>
+        </div>
+
         <!-- ADB 命令 -->
         <section id="adb" class="tool-section">
             <h2>📱 ADB 命令</h2>
